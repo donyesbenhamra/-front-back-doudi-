@@ -1,0 +1,14 @@
+.container {
+  max-width: 500px;
+  margin: 100px auto;
+  text-align: center;
+  font-family: 'Segoe UI', sans-serif;
+  padding: 40px;
+  border: 1px solid #ffcdd2;
+  border-radius: 12px;
+  background: #fff8f8;
+}
+
+.icon { font-size: 60px; margin-bottom: 20px; }
+h2 { color: #c62828; }
+p { color: #555; }

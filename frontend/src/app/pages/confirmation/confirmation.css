@@ -1,0 +1,109 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+.page-wrapper {
+  min-height: 100vh;
+  background: #f5f7fa;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.bank-header {
+  background: #2563B8;
+  color: white;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bank-logo { height: 50px; object-fit: contain; }
+
+.client-info { display: flex; gap: 12px; align-items: center; font-size: 14px; }
+
+.badge {
+  background: rgba(255,255,255,0.2);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  padding: 24px;
+}
+.confirmation-container {
+  max-width: 600px;
+  margin: 600px auto;
+  text-align: center;
+  padding: 0 24px;
+}
+
+.success-icon {
+  font-size: 72px;
+  margin-bottom: 24px;
+  animation: bounce 0.6s ease;
+}
+
+@keyframes bounce {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+h1 {
+  color: #1a3c6e;
+  font-size: 26px;
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 15px;
+  margin-bottom: 32px;
+}
+
+.info-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 24px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row:last-child { border-bottom: none; }
+
+.info-label { color: #888; font-size: 14px; }
+.info-value { font-weight: 600; color: #1a3c6e; font-size: 14px; }
+
+.message-box {
+  background: #e8f5e9;
+  border-radius: 10px;
+  padding: 16px 20px;
+  color: #2e7d32;
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+
+.actions { display: flex; justify-content: center; }
+
+.btn-primary {
+  background: #1a3c6e;
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover { background: #2a5298; }

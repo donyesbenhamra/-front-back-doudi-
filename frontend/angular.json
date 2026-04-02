@@ -1,0 +1,141 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": {
+    "packageManager": "npm",
+    "analytics": "75b50aaf-6968-4cf0-9b8a-77baf8a81af1"
+  },
+  "newProjectRoot": "projects",
+  "projects": {
+    "recouvrement-client": {
+      "projectType": "application",
+      "schematics": {},
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "src/main.ts",
+            "tsConfig": "tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              },
+              "src/assets"
+            ],
+            "styles": ["src/styles.css"],
+            "security": {
+              "allowedHosts": []
+            }
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "12kB",
+                  "maximumError": "16kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "recouvrement-client:build:production"
+            },
+            "development": {
+              "buildTarget": "recouvrement-client:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test"
+        }
+      }
+    },
+    "espace-admin": {
+      "projectType": "application",
+      "schematics": {},
+      "root": "projects/espace-admin",
+      "sourceRoot": "projects/espace-admin/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "projects/espace-admin/src/main.ts",
+            "tsConfig": "projects/espace-admin/tsconfig.app.json",
+            "assets": [
+  {
+    "glob": "**/*",
+    "input": "projects/espace-admin/public",
+    "output": "/assets/"
+  },
+  "projects/espace-admin/src/favicon.ico",
+  "projects/espace-admin/src/assets"
+],
+              
+            "styles": ["projects/espace-admin/src/styles.css"]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "12kB",
+                  "maximumError": "16kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "espace-admin:build:production"
+            },
+            "development": {
+              "buildTarget": "espace-admin:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test"
+        }
+      }
+    }
+  }
+}

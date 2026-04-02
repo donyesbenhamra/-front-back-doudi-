@@ -1,0 +1,303 @@
+<div class="client-container">
+
+  <!-- Header Premium -->
+  <header class="main-header">
+    <div class="header-content">
+      <div class="logo-stack">
+        <div class="logo-text-inline">
+          <span class="stb-text">STB</span>
+          <img src="/logostb.png" alt="STB Logo" class="logo-symbol-xl">
+          <span class="bank-text">BANK</span>
+        </div>
+        <div class="logo-divider"></div>
+        <div class="logo-subtitle">RECOUVREMENT</div>
+      </div>
+      
+      <div class="client-profile">
+        <button class="header-back-btn" (click)="retourDossiers()">
+          <span class="arrow">←</span>
+          <span>RETOUR</span>
+        </button>
+        <div class="agency-badge">
+          <span class="icon">🏛️</span>
+          <span>Agence {{ clientData?.villeAgence }}</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-area">
+    
+    <!-- Résumé du Dossier -->
+    <div class="dossier-summary-banner">
+      <div class="summary-main">
+        <div class="summary-icon">📜</div>
+        <div class="summary-text">
+          <h1>{{ dossier?.typeEmprunt }}</h1>
+          <p>Dossier n°{{ dossier?.idDossier }} • Identifiant : {{ clientData?.nomComplet }}</p>
+        </div>
+      </div>
+      <div class="summary-actions">
+        <span class="statut-pill large" [class]="dossier?.statutDossier?.toLowerCase()">
+          {{ dossier?.statutDossier | uppercase }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Navigation par Onglets -->
+    <nav class="modern-tabs">
+      <button class="tab-item" [class.active]="ongletActif === 'overview'" (click)="ongletActif = 'overview'">
+        <span class="tab-icon">📊</span> Vue d'ensemble
+      </button>
+      <button class="tab-item" [class.active]="ongletActif === 'paiements'" (click)="ongletActif = 'paiements'">
+        <span class="tab-icon">💵</span> Paiements
+      </button>
+      <button class="tab-item" [class.active]="ongletActif === 'relances'" (click)="ongletActif = 'relances'">
+        <span class="tab-icon">📢</span> Relances
+      </button>
+      <button class="tab-item" [class.active]="ongletActif === 'communications'" (click)="ongletActif = 'communications'">
+        <span class="tab-icon">💬</span> Messages
+      </button>
+      <button class="tab-item" [class.active]="ongletActif === 'actions'" (click)="ongletActif = 'actions'">
+        <span class="tab-icon">📋</span> Documents
+      </button>
+    </nav>
+
+    <!-- Contenu des Onglets -->
+    <div class="tab-content-wrapper">
+      
+      <!-- VUE D'ENSEMBLE -->
+      <ng-container *ngIf="ongletActif === 'overview'">
+        <div class="grid-layout">
+          
+          <!-- Chiffres Clés -->
+          <div class="stats-overview">
+            <div class="stat-card-mini initial">
+              <span class="label">Montant Total</span>
+              <span class="value">{{ (dossier?.montantInitial || 0) | number }} TND</span>
+            </div>
+            <div class="stat-card-mini paid">
+              <span class="label">Total Payé</span>
+              <span class="value">{{ montantPaye | number }} TND</span>
+            </div>
+            <div class="stat-card-mini remaining danger">
+              <span class="label">Reste à payer</span>
+              <span class="value">{{ dossier?.montantImpaye | number }} TND</span>
+            </div>
+            <div class="stat-card-mini delay warning">
+              <span class="label">Retard</span>
+              <span class="value">{{ joursRetard }} Jours</span>
+            </div>
+          </div>
+
+          <!-- Progression Visuelle -->
+          <div class="glass-section progress-box">
+            <div class="section-title">Progression du remboursement</div>
+            <div class="big-progress">
+              <div class="progress-info">
+                <span class="percentage">{{ progressionPaiement }}%</span>
+                <span class="description">de la dette remboursée</span>
+              </div>
+              <div class="progress-track-large">
+                <div class="progress-fill-gradient" [style.width.%]="progressionPaiement"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Echéancier -->
+          <div class="glass-section table-box">
+            <div class="section-title">Prochaines Échéances</div>
+            <div class="table-responsive">
+              <table class="modern-table">
+                <thead>
+                  <tr>
+                    <th>Montant</th>
+                    <th>Date d'échéance</th>
+                    <th>État</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let e of dossier?.echeances">
+                    <td class="bold">{{ e.montant | number }} TND</td>
+                    <td>{{ e.dateEcheance | date:'dd MMM yyyy' }}</td>
+                    <td>
+                      <span class="dot-status" [class]="e.statut"></span>
+                      {{ e.statut | uppercase }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Formulaire Intention -->
+          <div class="glass-section form-box" *ngIf="!submitted; else confirmationBlock">
+            <div class="section-title">Déposer une intention</div>
+            <p class="form-help">Informez votre conseiller de votre situation pour régulariser votre dossier.</p>
+            
+            <form [formGroup]="form" (ngSubmit)="onSubmit()" class="modern-form">
+              <div class="input-group">
+                <label>Action envisagée</label>
+                <div class="visual-select">
+                  <div *ngFor="let action of actionsDisponibles" 
+                       class="select-option"
+                       [class.active]="form.get('typeIntention')?.value === action.value"
+                       (click)="form.get('typeIntention')?.setValue(action.value)">
+                    <span class="option-label">{{ action.label }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid-form" *ngIf="form.get('typeIntention')?.value">
+                <div class="input-group" *ngIf="['demande_echeance', 'promesse_paiement'].includes(form.get('typeIntention')?.value)">
+                  <label>Date prévue</label>
+                  <input type="date" formControlName="datePaiementPrevue" class="styled-input">
+                </div>
+                <div class="input-group" *ngIf="form.get('typeIntention')?.value === 'paiement_partiel'">
+                  <label>Montant proposé</label>
+                  <div class="currency-input">
+                    <input type="number" formControlName="montantPropose" class="styled-input" placeholder="0.00">
+                    <span class="currency">TND</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label>Commentaire</label>
+                <textarea formControlName="commentaire" rows="3" class="styled-input" placeholder="Détails complémentaires..."></textarea>
+              </div>
+
+              <button type="submit" class="submit-btn" [disabled]="form.invalid || loading">
+                <span *ngIf="!loading">🚀 Envoyer mon intention</span>
+                <span *ngIf="loading">Traitement...</span>
+              </button>
+            </form>
+          </div>
+
+          <ng-template #confirmationBlock>
+            <div class="success-celebration">
+              <div class="success-icon">🎉</div>
+              <h3>Intention transmise !</h3>
+              <p>Votre demande est en cours d'analyse par nos services.</p>
+              <button class="secondary-btn" (click)="submitted = false">Nouvelle déclaration</button>
+            </div>
+          </ng-template>
+
+        </div>
+      </ng-container>
+
+      <!-- PAIEMENTS -->
+      <ng-container *ngIf="ongletActif === 'paiements'">
+        <div class="glass-section">
+          <div class="section-title">Historique des transactions</div>
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Montant</th>
+                <th>Date de paiement</th>
+                <th>Mode</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of dossier?.paiements">
+                <td class="bold success-text">+ {{ p.montantPaye | number }} TND</td>
+                <td>{{ p.datePaiement | date:'dd MMM yyyy' }}</td>
+                <td><span class="payment-badge">{{ p.typePaiement }}</span></td>
+              </tr>
+              <tr *ngIf="!dossier?.paiements?.length">
+                <td colspan="3" class="empty-msg">Aucune transaction enregistrée</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- RELANCES -->
+      <ng-container *ngIf="ongletActif === 'relances'">
+        <div class="relances-stream">
+          <div class="relance-item" *ngFor="let r of dossier?.relances">
+            <div class="relance-meta">
+              <div class="relance-canal">
+                {{ r.moyen === 'sms' ? '📱' : r.moyen === 'email' ? '📧' : '📞' }}
+                {{ r.moyen | uppercase }}
+              </div>
+              <span class="relance-date">{{ r.dateRelance | date:'dd MMM yyyy' }}</span>
+            </div>
+            <div class="relance-bubble">
+              <p>{{ r.contenu || 'Message de relance administrative' }}</p>
+              <div class="relance-footer">
+                <span class="relance-status" [class]="r.statut">{{ r.statut }}</span>
+                <button class="reply-btn" *ngIf="r.statut !== 'repondu'" (click)="ouvrirReponseRelance(r)">
+                  Répondre
+                </button>
+              </div>
+            </div>
+            
+            <!-- Formulaire de réponse -->
+            <div class="inline-reply" *ngIf="relanceRepondreIndex === r.idRelance">
+              <textarea [(ngModel)]="reponseRelanceTexte" placeholder="Votre réponse..." class="styled-input"></textarea>
+              <div class="reply-actions">
+                <button (click)="annulerReponseRelance()" class="text-btn">Annuler</button>
+                <button (click)="envoyerReponseRelance(r)" class="small-submit" [disabled]="!reponseRelanceTexte.trim()">Envoyer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- MESSAGES -->
+      <ng-container *ngIf="ongletActif === 'communications'">
+        <div class="chat-container">
+          <div class="chat-history">
+            <div *ngFor="let comm of dossier?.communications" class="message-wrapper" [class.from-client]="comm.origine === 'client'">
+              <div class="message-bubble">
+                <div class="message-info">{{ comm.origine === 'client' ? 'Vous' : 'Banque' }} • {{ comm.dateEnvoi | date:'HH:mm' }}</div>
+                <div class="message-text">{{ comm.message }}</div>
+              </div>
+            </div>
+          </div>
+          <form [formGroup]="messageForm" (ngSubmit)="envoyerMessage()" class="chat-input-area">
+            <textarea formControlName="message" placeholder="Tapez votre message ici..."></textarea>
+            <button type="submit" [disabled]="messageForm.invalid || messageSending">➔</button>
+          </form>
+        </div>
+      </ng-container>
+
+      <!-- DOCUMENTS -->
+      <ng-container *ngIf="ongletActif === 'actions'">
+        <div class="docs-grid">
+          <div class="doc-card">
+            <div class="doc-type-icon">📊</div>
+            <div class="doc-body">
+              <h4>État de situation</h4>
+              <p>Justificatif officiel de votre solde actuel.</p>
+            </div>
+            <button class="icon-btn-dl" (click)="telechargerRecu()">📥</button>
+          </div>
+          <div class="doc-card">
+            <div class="doc-type-icon">📜</div>
+            <div class="doc-body">
+              <h4>Historique complet</h4>
+              <p>Toutes vos actions et paiements depuis l'ouverture.</p>
+            </div>
+            <button class="icon-btn-dl" (click)="telechargerHistorique()">📥</button>
+          </div>
+        </div>
+        
+        <div class="quick-support">
+          <h3>Besoin d'aide immédiate ?</h3>
+          <div class="support-channels">
+            <div class="channel whatsapp" (click)="ouvrirWhatsApp()">
+              <span class="channel-icon">💬</span>
+              <span>WhatsApp Rapide</span>
+            </div>
+            <div class="channel phone" (click)="contacterAgence()">
+              <span class="channel-icon">📞</span>
+              <span>Appeler l'agence</span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </main>
+</div>
