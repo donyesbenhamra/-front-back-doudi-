@@ -41,8 +41,9 @@
     </div>
 
     <!-- Liste des dossiers style "Cards" -->
-    <div class="dossiers-grid">
-      <div class="modern-card" *ngFor="let dossier of dossiers" (click)="ouvrirDossier(dossier.idDossier)">
+    <ng-container *ngIf="dossiers && dossiers.length > 0; else emptyState">
+      <div class="dossiers-grid">
+        <div class="modern-card" *ngFor="let dossier of dossiers" (click)="ouvrirDossier(dossier.idDossier)">
         <div class="card-status-bar" [class]="dossier.statutDossier.toLowerCase()"></div>
         
         <div class="card-header">
@@ -91,6 +92,26 @@
           <span class="arrow">→</span>
         </div>
       </div>
-    </div>
+      </div>
+    </ng-container>
+
+    <ng-template #emptyState>
+      <div class="empty-state-container">
+        <div class="empty-icon-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" class="empty-svg">
+            <!-- Cercle principal -->
+            <circle cx="32" cy="32" r="28" fill="#eff6ff" stroke="#3b82f6" stroke-width="3"/>
+            <!-- Point d'exclamation — barre -->
+            <rect x="29.5" y="18" width="5" height="20" rx="2.5" fill="#3b82f6"/>
+            <!-- Point d'exclamation — point -->
+            <circle cx="32" cy="46" r="3" fill="#3b82f6"/>
+          </svg>
+        </div>
+        <h2>Aucun dossier actif</h2>
+        <p>Vous n'avez actuellement aucun dossier de recouvrement ou d'impayé en cours.<br>
+           <strong>Votre situation est entièrement à jour.</strong></p>
+        <div class="empty-badge">✔ Compte en règle</div>
+      </div>
+    </ng-template>
   </main>
 </div>

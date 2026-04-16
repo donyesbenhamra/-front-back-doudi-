@@ -65,11 +65,11 @@
 
     <!-- Contenu des Onglets -->
     <div class="tab-content-wrapper">
-      
+
       <!-- VUE D'ENSEMBLE -->
       <ng-container *ngIf="ongletActif === 'overview'">
         <div class="grid-layout">
-          
+
           <!-- Chiffres Clés -->
           <div class="stats-overview">
             <div class="stat-card-mini initial">
@@ -134,17 +134,52 @@
           <div class="glass-section form-box" *ngIf="!submitted; else confirmationBlock">
             <div class="section-title">Déposer une intention</div>
             <p class="form-help">Informez votre conseiller de votre situation pour régulariser votre dossier.</p>
-            
+
+            <!-- Avertissement doublon -->
+            <div class="doublon-warning" *ngIf="afficherAvertissementDoublon && intentionExistante">
+              <div class="doublon-icon">⚠️</div>
+              <div class="doublon-body">
+                <strong>Une intention est déjà en attente</strong>
+                <p>Vous avez déjà soumis une intention de type
+                  <em>{{ intentionExistante.typeIntention | titlecase }}</em>
+                  le {{ intentionExistante.dateIntention | date:'dd/MM/yyyy' }}.
+                  Souhaitez-vous la modifier ou l'annuler ?
+                </p>
+                <div class="doublon-actions">
+                  <button class="btn-modifier" (click)="modifierIntentionExistante()">
+                    ✏️ Modifier (soumettre une nouvelle)
+                  </button>
+                  <button class="btn-annuler-intention" (click)="annulerIntentionExistante()" [disabled]="intentionLoading">
+                    <span *ngIf="!intentionLoading">🗑️ Annuler l'intention précédente</span>
+                    <span *ngIf="intentionLoading">⏳ Annulation...</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <form [formGroup]="form" (ngSubmit)="onSubmit()" class="modern-form">
+
               <div class="input-group">
-                <label>Action envisagée</label>
+                <label>Email (optionnel — pour l'accusé de réception)</label>
+                <input type="email" formControlName="email" class="styled-input" placeholder="votre@email.com">
+                <div class="field-warning" *ngIf="emailInvalide">
+                  📱 Adresse e-mail invalide — l'accusé sera envoyé uniquement par SMS.
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label>Action envisagée <span class="required">*</span></label>
                 <div class="visual-select">
-                  <div *ngFor="let action of actionsDisponibles" 
+                  <div *ngFor="let action of actionsDisponibles"
                        class="select-option"
                        [class.active]="form.get('typeIntention')?.value === action.value"
                        (click)="form.get('typeIntention')?.setValue(action.value)">
                     <span class="option-label">{{ action.label }}</span>
                   </div>
+                </div>
+                <div class="field-error"
+                     *ngIf="form.get('typeIntention')?.touched && !form.get('typeIntention')?.value">
+                  ⚠️ Veuillez sélectionner une action avant de soumettre.
                 </div>
               </div>
 
@@ -167,10 +202,16 @@
                 <textarea formControlName="commentaire" rows="3" class="styled-input" placeholder="Détails complémentaires..."></textarea>
               </div>
 
-              <button type="submit" class="submit-btn" [disabled]="form.invalid || loading">
-                <span *ngIf="!loading">🚀 Envoyer mon intention</span>
-                <span *ngIf="loading">Traitement...</span>
-              </button>
+              <div class="form-actions">
+                <button type="button" class="cancel-btn" (click)="annulerFormulaire()">
+                  ✕ Annuler
+                </button>
+                <button type="submit" class="submit-btn" [disabled]="form.invalid || loading">
+                  <span *ngIf="!loading">🚀 Envoyer mon intention</span>
+                  <span *ngIf="loading">Traitement...</span>
+                </button>
+              </div>
+
             </form>
           </div>
 
@@ -232,8 +273,6 @@
                 </button>
               </div>
             </div>
-            
-            <!-- Formulaire de réponse -->
             <div class="inline-reply" *ngIf="relanceRepondreIndex === r.idRelance">
               <textarea [(ngModel)]="reponseRelanceTexte" placeholder="Votre réponse..." class="styled-input"></textarea>
               <div class="reply-actions">
@@ -266,24 +305,41 @@
       <!-- DOCUMENTS -->
       <ng-container *ngIf="ongletActif === 'actions'">
         <div class="docs-grid">
+
           <div class="doc-card">
             <div class="doc-type-icon">📊</div>
             <div class="doc-body">
               <h4>État de situation</h4>
               <p>Justificatif officiel de votre solde actuel.</p>
+              <div class="pdf-error" *ngIf="pdfError.recu">
+                <span>⚠️ {{ pdfError.recu }}</span>
+                <button class="retry-btn" (click)="telechargerRecu()">Réessayer</button>
+              </div>
             </div>
-            <button class="icon-btn-dl" (click)="telechargerRecu()">📥</button>
+            <button class="icon-btn-dl" (click)="telechargerRecu()" [disabled]="pdfLoading.recu">
+              <span *ngIf="!pdfLoading.recu">📥</span>
+              <span *ngIf="pdfLoading.recu" class="spinner">⏳</span>
+            </button>
           </div>
+
           <div class="doc-card">
             <div class="doc-type-icon">📜</div>
             <div class="doc-body">
               <h4>Historique complet</h4>
               <p>Toutes vos actions et paiements depuis l'ouverture.</p>
+              <div class="pdf-error" *ngIf="pdfError.historique">
+                <span>⚠️ {{ pdfError.historique }}</span>
+                <button class="retry-btn" (click)="telechargerHistorique()">Réessayer</button>
+              </div>
             </div>
-            <button class="icon-btn-dl" (click)="telechargerHistorique()">📥</button>
+            <button class="icon-btn-dl" (click)="telechargerHistorique()" [disabled]="pdfLoading.historique">
+              <span *ngIf="!pdfLoading.historique">📥</span>
+              <span *ngIf="pdfLoading.historique" class="spinner">⏳</span>
+            </button>
           </div>
+
         </div>
-        
+
         <div class="quick-support">
           <h3>Besoin d'aide immédiate ?</h3>
           <div class="support-channels">
@@ -298,6 +354,7 @@
           </div>
         </div>
       </ng-container>
+
     </div>
   </main>
 </div>

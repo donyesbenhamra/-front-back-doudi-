@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgIfContext } from '@angular/common';
 import { TokenService, ClientHistoriqueDto, DossierDto } from '../../services/token';
 import { RecouvrementService } from '../../services/recouvrement';
 import { HttpClient } from '@angular/common/http';
+
+type NewType = TemplateRef<NgIfContext<boolean>>;
 
 @Component({
   selector: 'app-formulaire',
@@ -24,8 +26,7 @@ export class FormulaireComponent implements OnInit {
   loading = false;
   dataLoading = true;
 
-  // ✅ Onglet actif avec typage sécurisé
- ongletActif: 'overview' | 'paiements' | 'relances' | 'communications' | 'actions' = 'overview';
+  ongletActif: 'overview' | 'paiements' | 'relances' | 'communications' | 'actions' = 'overview';
   fichierSelectionne: File | null = null;
 
   // Communications
@@ -33,19 +34,24 @@ export class FormulaireComponent implements OnInit {
   messageSending = false;
 
   // Relances
-  relanceRepondreIndex: any = null; // contiendra l'idRelance de la relance active
+  relanceRepondreIndex: any = null;
   reponseRelanceTexte: string = '';
   relanceSending: boolean = false;
-  relanceReponsesEnvoyees: number[] = []; // ID des relances déjà traitées
+  relanceReponsesEnvoyees: number[] = [];
+
+  // ── PDF ──────────────────────────────────────────────
+  pdfLoading: { recu: boolean; historique: boolean } = { recu: false, historique: false };
+  pdfError: { recu: string | null; historique: string | null } = { recu: null, historique: null };
 
   actionsDisponibles = [
-    { value: 'paiement_immediat',    label: 'Règlement total' },
-    { value: 'paiement_partiel',     label: 'Règlement partiel' },
-    { value: 'promesse_paiement',    label: 'Promesse de paiement' },
-    { value: 'demande_echeance',     label: "Demande d'échéancier" },
-    { value: 'demande_consolidation',label: 'Demande de consolidation' },
+    { value: 'paiement_immediat',     label: 'Règlement total' },
+    { value: 'paiement_partiel',      label: 'Règlement partiel' },
+    { value: 'promesse_paiement',     label: 'Promesse de paiement' },
+    { value: 'demande_echeance',      label: "Demande d'échéancier" },
+    { value: 'demande_consolidation', label: 'Demande de consolidation' },
   ];
- 
+confirmationBlock: NewType | null | undefined;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -56,60 +62,138 @@ export class FormulaireComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.token = this.route.snapshot.paramMap.get('token')!;
-    this.idDossier = Number(this.route.snapshot.paramMap.get('idDossier'));
+  this.token = this.route.snapshot.paramMap.get('token')!;
+  this.idDossier = Number(this.route.snapshot.paramMap.get('idDossier'));
+this.tokenService.clearClientData();
+  this.form = this.fb.group({
+    typeIntention:      ['', Validators.required],
+    datePaiementPrevue: [null],
+    montantPropose:     [null],
+    commentaire:        ['', Validators.maxLength(500)],
+    email:              ['', Validators.email]  // optionnel, validation email
+  });
 
-    this.form = this.fb.group({
-      typeIntention:    ['', Validators.required],
-      datePaiementPrevue: [null],
-      montantPropose:   [null],
-      commentaire:      ['', Validators.maxLength(500)]
-    });
+  this.messageForm = this.fb.group({
+    message: ['', [Validators.required, Validators.maxLength(500)]]
+  });
 
-    this.messageForm = this.fb.group({
-      message: ['', [Validators.required, Validators.maxLength(500)]]
-    });
-
-    const cachedData = this.tokenService.getClientDataFromSession();
-
-    if (cachedData) {
-      this.clientData = cachedData;
-      this.dossier = cachedData.dossiers.find(d => Number(d.idDossier) === Number(this.idDossier)) || null;
-      if (!this.dossier) { this.router.navigate(['/token-invalide']); return; }
-      this.dataLoading = false;
-    } else {
-      this.tokenService.getClientData(this.token).subscribe({
-        next: data => {
-          this.clientData = data;
-          this.tokenService.saveClientData(data);
-          this.dossier = data.dossiers.find(d => Number(d.idDossier) === Number(this.idDossier)) || null;
-          if (!this.dossier) { this.router.navigate(['/token-invalide']); return; }
-          this.dataLoading = false;
-        },
-        error: () => {
-          this.dataLoading = false;
-          this.router.navigate(['/token-invalide']);
-        }
-      });
-    }
-
-    // Validation dynamique
-    this.form.get('typeIntention')?.valueChanges.subscribe(val => {
-      const dateCtrl = this.form.get('datePaiementPrevue');
-      const montantCtrl = this.form.get('montantPropose');
-      dateCtrl?.clearValidators();
-      montantCtrl?.clearValidators();
-      if (val === 'demande_echeance' || val === 'promesse_paiement') {
-        dateCtrl?.setValidators([Validators.required]);
+  const cachedData = this.tokenService.getClientDataFromSession();
+  if (cachedData) {
+    this.clientData = cachedData;
+    this.dossier = cachedData.dossiers.find(d => Number(d.idDossier) === Number(this.idDossier)) || null;
+    if (!this.dossier) { this.router.navigate(['/token-invalide']); return; }
+    this.dataLoading = false;
+    this.verifierDoublon();
+  } else {
+    this.tokenService.getClientData(this.token).subscribe({
+      next: data => {
+        this.clientData = data;
+        this.tokenService.saveClientData(data);
+        this.dossier = data.dossiers.find(d => Number(d.idDossier) === Number(this.idDossier)) || null;
+        if (!this.dossier) { this.router.navigate(['/token-invalide']); return; }
+        this.dataLoading = false;
+        this.verifierDoublon();
+      },
+      error: () => {
+        this.dataLoading = false;
+        this.router.navigate(['/token-invalide']);
       }
-      if (val === 'paiement_partiel') {
-        montantCtrl?.setValidators([Validators.required]);
-      }
-      dateCtrl?.updateValueAndValidity();
-      montantCtrl?.updateValueAndValidity();
     });
   }
 
+  this.form.get('typeIntention')?.valueChanges.subscribe(val => {
+    const dateCtrl = this.form.get('datePaiementPrevue');
+    const montantCtrl = this.form.get('montantPropose');
+    dateCtrl?.clearValidators();
+    montantCtrl?.clearValidators();
+    if (val === 'demande_echeance' || val === 'promesse_paiement') {
+      dateCtrl?.setValidators([Validators.required]);
+    }
+    if (val === 'paiement_partiel') {
+      montantCtrl?.setValidators([Validators.required]);
+    }
+    dateCtrl?.updateValueAndValidity();
+    montantCtrl?.updateValueAndValidity();
+  });
+
+  // Validation email live
+  this.form.get('email')?.valueChanges.subscribe(val => {
+    this.emailInvalide = !!val && this.form.get('email')?.invalid === true;
+  });
+}
+
+private verifierDoublon(): void {
+  this.recouvrementService.verifierIntentionExistante(this.token, this.idDossier).subscribe({
+    next: (res) => {
+      if (res.existe) {
+        this.intentionExistante = res;
+        this.afficherAvertissementDoublon = true;
+      }
+    },
+    error: (err) => { console.error('verifierDoublon error:', err); } // ← voir l'erreur
+  });
+}
+
+annulerIntentionExistante(): void {
+  if (!this.intentionExistante?.idIntention) return;
+  this.intentionLoading = true;
+  this.recouvrementService.annulerIntention(this.token, this.intentionExistante.idIntention).subscribe({
+    next: () => {
+      this.intentionLoading = false;
+      this.intentionExistante = null;
+      this.afficherAvertissementDoublon = false;
+    },
+    error: () => { this.intentionLoading = false; }
+  });
+}
+
+modifierIntentionExistante(): void {
+  this.afficherAvertissementDoublon = false;
+  // Le formulaire reste visible pour soumettre une nouvelle intention
+}
+
+onSubmit(): void {
+  // Marquer typeIntention comme touché pour afficher l'erreur
+  this.form.get('typeIntention')?.markAsTouched();
+
+  if (!this.form.get('typeIntention')?.value) return;
+  if (this.form.invalid) return;
+
+  const email = this.form.get('email')?.value;
+  if (email && this.form.get('email')?.invalid) {
+    this.emailInvalide = true;
+  }
+
+  this.loading = true;
+  const payload = {
+    idDossier: this.idDossier,
+    typeIntention: this.form.value.typeIntention,
+    commentaire: this.form.value.commentaire,
+    datePaiementPrevue: this.form.value.datePaiementPrevue,
+    montantPropose: this.form.value.montantPropose
+  };
+
+  this.recouvrementService.soumettreReponse(payload, this.token).subscribe({
+    next: () => {
+      this.loading = false;
+      this.intentionExistante = null;
+      this.afficherAvertissementDoublon = false;
+      this.router.navigate(['/confirmation'], {
+        state: {
+          idDossier: this.idDossier,
+          typeIntention: this.form.value.typeIntention,
+          token: this.token,
+          accuseParSmsUniquement: this.emailInvalide
+        }
+      });
+    },
+    error: () => { this.loading = false; }
+  });
+}
+annulerFormulaire(): void {
+  this.form.reset();
+  this.emailInvalide = false;
+}
   // ── Getters ──────────────────────────────────────────
   get montantPaye(): number {
     if (!this.dossier?.paiements) return 0;
@@ -128,26 +212,26 @@ export class FormulaireComponent implements OnInit {
     const paye = this.dossier.montantInitial - this.dossier.montantImpaye;
     return Math.round((paye / this.dossier.montantInitial) * 100);
   }
-contacterAgence() {
-  this.ongletActif = 'communications';
-  this.messageForm.patchValue({
-    message: "Bonjour, je souhaite contacter l'agence concernant mon dossier."
-  });
-}
-appelerAgence() {
-  const numero = "71340000";
-    window.location.href = `tel:${numero}`;
-  
-}
-ouvrirWhatsApp(): void {
-  const numero = "21671340000"; // numéro STB
-  const message = encodeURIComponent(
-    `Bonjour, je suis ${this.clientData?.nomComplet}, concernant mon dossier #${this.idDossier}.`
-  );
 
-  const url = `https://wa.me/${numero}?text=${message}`;
-  window.open(url, '_blank');
-}
+  contacterAgence(): void {
+    this.ongletActif = 'communications';
+    this.messageForm.patchValue({
+      message: "Bonjour, je souhaite contacter l'agence concernant mon dossier."
+    });
+  }
+
+  appelerAgence(): void {
+    window.location.href = `tel:71340000`;
+  }
+
+  ouvrirWhatsApp(): void {
+    const numero = "21671340000";
+    const message = encodeURIComponent(
+      `Bonjour, je suis ${this.clientData?.nomComplet}, concernant mon dossier #${this.idDossier}.`
+    );
+    window.open(`https://wa.me/${numero}?text=${message}`, '_blank');
+  }
+
   // ── Fichiers ──────────────────────────────────────────
   onFileSelected(event: any): void {
     this.fichierSelectionne = event.target.files[0] || null;
@@ -159,42 +243,61 @@ ouvrirWhatsApp(): void {
     formData.append('fichier', this.fichierSelectionne);
     this.http.post(`http://localhost:5203/api/client/upload/${this.token}`, formData).subscribe({
       next: () => { alert('Fichier envoyé !'); this.fichierSelectionne = null; },
-      error: () => alert('Erreur lors de l\'envoi.')
+      error: () => alert("Erreur lors de l'envoi.")
     });
   }
 
+  // ── Téléchargements PDF ───────────────────────────────
   telechargerRecu(): void {
-    window.open(`http://localhost:5203/api/client/recu/${this.token}?idDossier=${this.idDossier}`, '_blank');
+    this.pdfLoading.recu = true;
+    this.pdfError.recu = null;
+
+    this.http.get(
+      `http://localhost:5203/api/client/recu/${this.token}?idDossier=${this.idDossier}`,
+      { responseType: 'blob' }
+    ).subscribe({
+      next: (blob) => {
+        this.pdfLoading.recu = false;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `etat-situation-${this.idDossier}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => {
+        this.pdfLoading.recu = false;
+        this.pdfError.recu = 'Erreur lors de la génération du PDF. Veuillez réessayer.';
+      }
+    });
   }
 
   telechargerHistorique(): void {
-    window.open(`http://localhost:5203/api/client/historique-pdf/${this.token}/${this.idDossier}`, '_blank');
+    this.pdfLoading.historique = true;
+    this.pdfError.historique = null;
+
+    this.http.get(
+      `http://localhost:5203/api/client/historique-pdf/${this.token}/${this.idDossier}`,
+      { responseType: 'blob' }
+    ).subscribe({
+      next: (blob) => {
+        this.pdfLoading.historique = false;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `historique-${this.idDossier}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => {
+        this.pdfLoading.historique = false;
+        this.pdfError.historique = 'Erreur lors de la génération du PDF. Veuillez réessayer.';
+      }
+    });
   }
 
   retourDossiers(): void {
     this.router.navigate(['/client', this.token]);
-  }
-
-  // ── Intention ─────────────────────────────────────────
-  onSubmit(): void {
-    if (this.form.invalid) return;
-    this.loading = true;
-    const payload = {
-      idDossier: this.idDossier,
-      typeIntention: this.form.value.typeIntention,
-      commentaire: this.form.value.commentaire,
-      datePaiementPrevue: this.form.value.datePaiementPrevue,
-      montantPropose: this.form.value.montantPropose
-    };
-    this.recouvrementService.soumettreReponse(payload).subscribe({
-      next: () => {
-        this.loading = false;
-        this.router.navigate(['/confirmation'], {
-          state: { idDossier: this.idDossier, typeIntention: this.form.value.typeIntention, token: this.token }
-        });
-      },
-      error: () => { this.loading = false; }
-    });
   }
 
   // ── Communications ────────────────────────────────────
@@ -222,37 +325,21 @@ ouvrirWhatsApp(): void {
     this.reponseRelanceTexte = '';
   }
 
-  
-
- envoyerReponseRelance(r: any) {
-
-  // ✅ vérifier avant envoi
-  if (!this.reponseRelanceTexte.trim()) return;
-
-  console.log("ID relance:", r.idRelance);
-  console.log("Message:", this.reponseRelanceTexte);
-
-  this.relanceSending = true;
-
-  this.recouvrementService.repondreRelance(this.token, r.idRelance,this.reponseRelanceTexte)
-    .subscribe({
-      next: (response: any) => {
-        console.log("SUCCESS", response);
-        this.rafraichirDossier();
-
-        // ✅ reset UI
-        this.relanceSending = false;
-        this.reponseRelanceTexte = '';
-       this.relanceRepondreIndex = null;
-        // optionnel (update visuel)
-        r.statut = 'repondu';
-      },
-      error: (err: any) => {
-        console.log("ERROR", err);
-        this.relanceSending = false;
-      }
-    });
-}
+  envoyerReponseRelance(r: any): void {
+    if (!this.reponseRelanceTexte.trim()) return;
+    this.relanceSending = true;
+    this.recouvrementService.repondreRelance(this.token, r.idRelance, this.reponseRelanceTexte)
+      .subscribe({
+        next: () => {
+          this.rafraichirDossier();
+          this.relanceSending = false;
+          this.reponseRelanceTexte = '';
+          this.relanceRepondreIndex = null;
+          r.statut = 'repondu';
+        },
+        error: () => { this.relanceSending = false; }
+      });
+  }
 
   // ── Rafraîchir dossier ────────────────────────────────
   private rafraichirDossier(callback?: () => void): void {
@@ -267,8 +354,11 @@ ouvrirWhatsApp(): void {
     });
   }
 
-  // ── Changer onglet ───────────────────────────────────
   changerOnglet(onglet: 'overview' | 'relances' | 'communications'): void {
     this.ongletActif = onglet;
   }
+  intentionExistante: any = null;
+intentionLoading = false;
+afficherAvertissementDoublon = false;
+emailInvalide = false;
 }
