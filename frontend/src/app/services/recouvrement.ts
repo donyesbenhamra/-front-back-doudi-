@@ -19,7 +19,7 @@ export interface IntentionExistante {
 
 @Injectable({ providedIn: 'root' })
 export class RecouvrementService {
-  private apiUrl = 'http://localhost:5203/api';
+  private apiUrl = 'http://localhost:5000/api';
 
   constructor(private http: HttpClient) {}
 

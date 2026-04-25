@@ -1,360 +1,421 @@
-<div class="client-container">
+<div class="client-container-with-sidebar">
 
-  <!-- Header Premium -->
+  <!-- Center Header -->
   <header class="main-header">
-    <div class="header-content">
-      <div class="logo-stack">
-        <div class="logo-text-inline">
-          <span class="stb-text">STB</span>
-          <img src="/logostb.png" alt="STB Logo" class="logo-symbol-xl">
-          <span class="bank-text">BANK</span>
-        </div>
-        <div class="logo-divider"></div>
-        <div class="logo-subtitle">RECOUVREMENT</div>
-      </div>
-      
-      <div class="client-profile">
-        <button class="header-back-btn" (click)="retourDossiers()">
-          <span class="arrow">←</span>
-          <span>RETOUR</span>
-        </button>
-        <div class="agency-badge">
-          <span class="icon">🏛️</span>
-          <span>Agence {{ clientData?.villeAgence }}</span>
-        </div>
-      </div>
+    <div class="stb-logo-container">
+      <img src="assets/OIP-removebg-preview.png" alt="STB BANK" class="stb-logo-img">
+    </div>
+
+    <div class="client-info-badge">
+      <button class="header-back-btn" (click)="retourDossiers()">
+        <span>← RETOUR</span>
+      </button>
     </div>
   </header>
 
-  <main class="content-area">
-    
-    <!-- Résumé du Dossier -->
-    <div class="dossier-summary-banner">
-      <div class="summary-main">
-        <div class="summary-icon">📜</div>
-        <div class="summary-text">
-          <h1>{{ dossier?.typeEmprunt }}</h1>
-          <p>Dossier n°{{ dossier?.idDossier }} • Identifiant : {{ clientData?.nomComplet }}</p>
+
+  <div class="main-body">
+    <!-- SINGLE BLUE SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">Espace Client</div>
+        <div class="sidebar-subtitle">{{ clientData?.nomComplet }}</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <span class="sidebar-section-label">Navigation</span>
+
+        <a class="nav-item" [class.active]="ongletActif === 'overview'" (click)="ongletActif = 'overview'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+          </svg>
+          Vue d'ensemble
+        </a>
+
+        <a class="nav-item" [class.active]="ongletActif === 'paiements'" (click)="ongletActif = 'paiements'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+          Paiements
+        </a>
+
+        <a class="nav-item" [class.active]="ongletActif === 'relances'" (click)="ongletActif = 'relances'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          Relances
+        </a>
+
+        <a class="nav-item" [class.active]="ongletActif === 'communications'" (click)="ongletActif = 'communications'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          Messages
+        </a>
+
+        <a class="nav-item" [class.active]="ongletActif === 'actions'" (click)="ongletActif = 'actions'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
+          </svg>
+          Actions
+        </a>
+      </nav>
+
+        <div class="sidebar-footer">
+          <div class="theme-toggle" (click)="toggleTheme()" 
+               [style.background]="isDarkMode ? 'rgba(255,255,255,0.05)' : '#f8fafc'" 
+               [style.border]="isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e2e8f0'"
+               style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 12px; cursor: pointer; transition: all 0.2s;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="theme-icon" 
+                   [style.background]="isDarkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0'"
+                   style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                {{ isDarkMode ? '🌙' : '☀️' }}
+              </div>
+              <span [style.color]="isDarkMode ? '#f8fafc' : '#1e293b'" style="font-size: 13px; font-weight: 600;">
+                Mode {{ isDarkMode ? 'Sombre' : 'Clair' }}
+              </span>
+            </div>
+            <div class="toggle-switch" 
+                 [style.background]="isDarkMode ? 'rgba(255,255,255,0.2)' : '#cbd5e1'"
+                 style="width: 36px; height: 20px; border-radius: 20px; position: relative;">
+              <div class="toggle-knob" style="width: 14px; height: 14px; background: white; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);" [style.transform]="isDarkMode ? 'translateX(16px)' : 'translateX(0)'"></div>
+            </div>
+          </div>
+        </div>
+    </aside>
+
+    <main class="content-area">
+      <!-- Résumé du Dossier -->
+      <div class="dossier-summary-banner">
+        <div class="summary-main">
+          <div class="summary-icon">📜</div>
+          <div class="summary-text">
+            <h1>{{ dossier?.typeEmprunt }}</h1>
+            <p>Dossier n°{{ dossier?.idDossier }} • Identifiant : {{ clientData?.nomComplet }}</p>
+          </div>
+        </div>
+        <div class="summary-actions">
+          <span class="statut-pill large" [class]="dossier?.statutDossier?.toLowerCase()">
+            {{ dossier?.statutDossier | uppercase }}
+          </span>
         </div>
       </div>
-      <div class="summary-actions">
-        <span class="statut-pill large" [class]="dossier?.statutDossier?.toLowerCase()">
-          {{ dossier?.statutDossier | uppercase }}
-        </span>
+
+      <!-- Contenu des Onglets -->
+      <div class="tab-content-wrapper">
+        <!-- VUE D'ENSEMBLE -->
+        <ng-container *ngIf="ongletActif === 'overview'">
+          <div class="grid-layout">
+            <div class="stats-overview">
+              <div class="stat-card-mini initial">
+                <span class="label">Montant Total</span>
+                <span class="value">{{ (dossier?.montantInitial || 0) | number }} TND</span>
+              </div>
+              <div class="stat-card-mini paid">
+                <span class="label">Total Payé</span>
+                <span class="value">{{ montantPaye | number }} TND</span>
+              </div>
+              <div class="stat-card-mini remaining danger">
+                <span class="label">Reste à payer</span>
+                <span class="value">{{ dossier?.montantImpaye | number }} TND</span>
+              </div>
+              <div class="stat-card-mini delay warning">
+                <span class="label">Retard</span>
+                <span class="value">{{ joursRetard }} Jours</span>
+              </div>
+            </div>
+
+            <div class="glass-section progress-box">
+              <div class="section-title">Progression du remboursement</div>
+              <div class="big-progress">
+                <div class="progress-info">
+                  <span class="percentage">{{ progressionPaiement }}%</span>
+                  <span class="description">de la dette remboursée</span>
+                </div>
+                <div class="progress-track-large">
+                  <div class="progress-fill-gradient" [style.width.%]="progressionPaiement"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-section table-box">
+              <div class="section-title">Prochaines Échéances</div>
+              <div class="table-responsive">
+                <table class="modern-table">
+                  <thead>
+                    <tr>
+                      <th>Montant</th>
+                      <th>Date d'échéance</th>
+                      <th>État</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let e of dossier?.echeances">
+                      <td class="bold">{{ e.montant | number }} TND</td>
+                      <td>{{ e.dateEcheance | date:'dd MMM yyyy' }}</td>
+                      <td><span class="dot-status" [class]="e.statut"></span> {{ e.statut | uppercase }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="glass-section form-box" *ngIf="!submitted && !intentionExistante; else confirmationBlock">
+              <div class="section-title">Déposer une intention</div>
+              <form [formGroup]="form" (ngSubmit)="onSubmit()" class="modern-form">
+                <div class="input-grid">
+                  <div class="input-group full">
+                    <label>Que souhaitez-vous faire ?</label>
+                    <select formControlName="typeIntention" class="styled-input">
+                      <option value="" disabled selected>Sélectionnez une option</option>
+                      <option *ngFor="let opt of actionsDisponibles" [value]="opt.value">{{ opt.label }}</option>
+                    </select>
+                  </div>
+
+                  <div class="input-group" *ngIf="form.get('typeIntention')?.value === 'paiement_partiel'">
+                    <label>Montant proposé (TND)</label>
+                    <input type="number" formControlName="montantPropose" class="styled-input" placeholder="0.000">
+                  </div>
+
+                  <div class="input-group"
+                    *ngIf="['promesse_paiement', 'demande_echeance'].includes(form.get('typeIntention')?.value)">
+                    <label>Date prévue</label>
+                    <input type="date" formControlName="datePaiementPrevue" class="styled-input">
+                  </div>
+
+                  <div class="input-group full">
+                    <label>Email de contact <span class="required">*</span></label>
+                    <input type="email" formControlName="email" class="styled-input" placeholder="votre@email.com"
+                      required>
+                    <div class="field-error" *ngIf="emailInvalide"
+                      style="color: #ef4444; font-size: 11px; margin-top: 5px;">
+                      Format d'email invalide (ex: nom@domaine.com). Un reçu vous sera envoyé à cette adresse.
+                    </div>
+                  </div>
+
+                  <div class="input-group full">
+                    <label>Commentaire (Optionnel)</label>
+                    <textarea formControlName="commentaire" class="styled-input" rows="3"
+                      placeholder="Précisez votre demande..."></textarea>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" class="cancel-btn" (click)="annulerFormulaire()"
+                    style="background: transparent; border: 1px solid #cbd5e1; color: #64748b; padding: 14px 28px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                    ✕ Annuler
+                  </button>
+                  <button type="submit" class="submit-btn" [disabled]="form.invalid || loading">
+                    <span *ngIf="!loading">🚀 Envoyer mon intention</span>
+                    <span *ngIf="loading">Envoi en cours...</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+            <ng-template #confirmationBlock>
+              <div *ngIf="intentionExistante && afficherAvertissementDoublon"
+                class="alert-box warning-alert shadow-sm mb-4"
+                style="background:#fffbeb; border:1px solid #fde68a; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                <div class="alert-header" style="display:flex; align-items:center; gap: 10px; margin-bottom: 10px;">
+                  <span class="icon" style="font-size:24px;">⚠️</span>
+                  <h4 style="margin:0; color:#b45309; font-weight:bold;">Intention déjà en cours</h4>
+                </div>
+                <div class="alert-body" style="color:#92400e; font-size: 14px; margin-bottom: 15px;">
+                  Nous traitons déjà une intention de votre part :<br>
+                  <strong>{{ intentionExistante.typeIntention }}</strong>
+                  <ng-container *ngIf="intentionExistante.dateSoumission">
+                    du {{ intentionExistante.dateSoumission | date:'dd/MM/yyyy' }}
+                  </ng-container>.
+                  <br><br>
+                  <ng-container *ngIf="intentionExistante.statut">
+                    Statut : <span class="badge warning">{{ intentionExistante.statut }}</span>
+                  </ng-container>
+                </div>
+                <div class="alert-actions" style="display:flex; gap: 10px;">
+                  <button class="btn btn-danger btn-sm" (click)="annulerIntentionExistante()"
+                    [disabled]="intentionLoading"
+                    style="background: #ef4444; color:white; border:none; padding:8px 15px; border-radius:4px; font-weight:600; cursor:pointer;">
+                    <span *ngIf="!intentionLoading">❌ Annuler cette intention</span>
+                    <span *ngIf="intentionLoading">Annulation...</span>
+                  </button>
+                  <button class="btn btn-outline-warning btn-sm" (click)="modifierIntentionExistante()"
+                    style="background: white; color:#d97706; border:1px solid #d97706; padding:8px 15px; border-radius:4px; font-weight:600; cursor:pointer;">
+                    ✏️ Soumettre une nouvelle
+                  </button>
+                </div>
+              </div>
+              <div *ngIf="submitted" class="success-celebration">
+                <h3>Intention transmise !</h3>
+              </div>
+            </ng-template>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="ongletActif === 'paiements'">
+          <div class="glass-section">
+            <div class="section-title">Historique des transactions</div>
+
+            <div *ngIf="!dossier?.paiements || dossier?.paiements?.length === 0" style="text-align: center; padding: 40px; background: #f8fafc; border-radius: 8px; color: #64748b; margin-top: 15px; border: 1px dashed #cbd5e1;">
+              <span style="font-size: 24px; display: block; margin-bottom: 10px;">💵</span>
+              Aucun paiement n'a été effectué pour le moment.
+            </div>
+
+            <table class="modern-table" *ngIf="dossier?.paiements && dossier!.paiements!.length > 0">
+              <thead>
+                <tr>
+                  <th>Montant</th>
+                  <th>Date</th>
+                  <th>Mode</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of dossier?.paiements">
+                  <td class="bold success-text">+ {{ p.montantPaye | number }} TND</td>
+                  <td>{{ p.datePaiement | date:'dd MMM yyyy' }}</td>
+                  <td><span class="payment-badge">{{ p.typePaiement }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+        <!-- RELANCES -->
+        <ng-container *ngIf="ongletActif === 'relances'">
+          <div class="timeline-container">
+            <div class="section-title">Historique des relances</div>
+            <div class="timeline" *ngIf="dossier?.relances && dossier!.relances!.length > 0">
+              <div class="timeline-item" *ngFor="let r of dossier?.relances">
+                <div class="timeline-dot" [class]="r.niveauDanger"></div>
+                <div class="timeline-content">
+                  <div class="relance-header">
+                    <h4>{{ r.typeRelance }}</h4>
+                    <span class="relance-date">{{ r.dateRelance | date:'short' }}</span>
+                  </div>
+                  <p class="relance-text">{{ r.contenu }}</p>
+
+                  <div class="relance-status-area">
+                    <span class="status-pill {{ (r.statut || '').toLowerCase() || 'envoyee' }}">{{ r.statut || 'ENVOYEE'
+                      }}</span>
+                    <button *ngIf="(r.statut || '').toLowerCase() !== 'repondu'" class="reply-link-btn"
+                      (click)="ouvrirReponseRelance(r)" style="background: transparent; border: 1px solid #007bff; color: #007bff; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-left: 10px;">
+                      ↩️ Répondre
+                    </button>
+                  </div>
+
+                  <!-- Formulaire de réponse INLINE -->
+                  <div class="inline-reply" *ngIf="relanceRepondreIndex === r.idRelance"
+                    style="margin-top: 15px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <textarea [(ngModel)]="reponseRelanceTexte" placeholder="Tapez votre réponse ici..." class="styled-input"
+                      style="width: 100%; min-height: 80px; margin-bottom: 10px; padding: 10px;"></textarea>
+                    <div class="reply-actions" style="display:flex; gap:10px;">
+                      <button class="submit-btn" style="padding: 8px 16px; font-size: 13px; border-radius:6px; background: #007bff; color: white;"
+                        (click)="envoyerReponseRelance(r)" [disabled]="relanceSending || !reponseRelanceTexte.trim()">
+                        <span *ngIf="!relanceSending">Envoyer la réponse</span>
+                        <span *ngIf="relanceSending">Envoi...</span>
+                      </button>
+                      <button class="cancel-btn"
+                        style="padding: 8px 16px; font-size: 13px; border-radius:6px; border: 1px solid #cbd5e1; background: transparent; cursor:pointer; color: #64748b;"
+                        (click)="annulerReponseRelance()">Annuler</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div *ngIf="!dossier?.relances || dossier?.relances?.length === 0" style="text-align: center; padding: 40px; background: #f8fafc; border-radius: 8px; color: #64748b; margin-top: 20px;">
+              <span style="font-size: 24px; display: block; margin-bottom: 10px;">✅</span>
+              Aucune relance pour ce dossier pour le moment.
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- MESSAGES -->
+        <ng-container *ngIf="ongletActif === 'communications'">
+          <div class="messaging-panel">
+            <div class="section-title">Échanger avec votre conseiller</div>
+
+            <div class="messages-list" style="min-height: 200px; max-height: 480px; overflow-y: auto; padding: 20px; background: #f8fafc; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 15px;">
+              
+              <div *ngIf="!dossier?.communications || dossier?.communications?.length === 0" style="text-align: center; color: #94a3b8; margin-top: 40px;">
+                Aucun message n'a été échangé. Envoyez le premier message !
+              </div>
+
+            <div *ngFor="let msg of dossier?.communications" class="message-wrapper"
+  [class.from-client]="msg.origine === 'client'">
+  <div class="message-bubble">
+    <div class="msg-meta" style="font-size: 11px; opacity: 0.7; margin-bottom: 5px;">
+      {{ msg.origine === 'agent' ? '🏦 Conseiller' : msg.origine === 'systeme' ? '🤖 Système' : '👤 Vous' }}
+      · {{ msg.dateEnvoi | date:'short' }}
+    </div>
+    <div class="msg-text">{{ msg.message }}</div>
+  </div>
+</div>
+              </div>
+            </div>
+
+            <div class="msg-input-area" style="background: white; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+              <form [formGroup]="messageForm" (ngSubmit)="envoyerMessage()" style="display:flex; gap:10px; width:100%;">
+                <input type="text" formControlName="message" placeholder="Écrivez votre message ici..." class="styled-input"
+                  style="flex:1; padding: 12px 15px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                <button type="submit" class="send-message-btn" [disabled]="messageForm.invalid || messageSending"
+                  style="background: #007bff; color: white; border: none; border-radius: 8px; padding: 0 25px; font-weight: bold; cursor: pointer; transition: background 0.2s;">
+                  <span *ngIf="!messageSending">Envoyer</span>
+                  <span *ngIf="messageSending">Envoi...</span>
+                </button>
+              </form>
+            </div>
+        </ng-container>
+
+        <!-- DOCUMENTS & ACTIONS -->
+        <ng-container *ngIf="ongletActif === 'actions'">
+          <div class="docs-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="doc-card"
+              style="background: white; border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+              <div class="doc-body">
+                <h4 style="margin: 0 0 5px; color:#1e293b;">État de situation</h4>
+                <p style="margin: 0; font-size: 13px; color:#64748b;">Justificatif officiel de votre solde actuel.</p>
+                <div class="pdf-error" *ngIf="pdfError.recu" style="color:red; font-size: 11px; margin-top:5px;">
+                  <span>⚠️ {{ pdfError.recu }}</span>
+                  <button (click)="telechargerRecu()"
+                    style="border:none;background:transparent;color:#007bff;cursor:pointer;text-decoration:underline;">Réessayer</button>
+                </div>
+              </div>
+              <button class="icon-btn-dl" (click)="telechargerRecu()" [disabled]="pdfLoading.recu"
+                style="background: #f1f5f9; border:none; width:45px; height:45px; border-radius: 50%; font-size: 20px; cursor: pointer; display:flex; align-items:center; justify-content:center;">
+                <span *ngIf="!pdfLoading.recu">📥</span>
+                <span *ngIf="pdfLoading.recu">⏳</span>
+              </button>
+            </div>
+
+            <div class="doc-card"
+              style="background: white; border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+              <div class="doc-body">
+                <h4 style="margin: 0 0 5px; color:#1e293b;">Historique complet</h4>
+                <p style="margin: 0; font-size: 13px; color:#64748b;">Toutes vos actions et paiements.</p>
+                <div class="pdf-error" *ngIf="pdfError.historique" style="color:red; font-size: 11px; margin-top:5px;">
+                  <span>⚠️ {{ pdfError.historique }}</span>
+                  <button (click)="telechargerHistorique()"
+                    style="border:none;background:transparent;color:#007bff;cursor:pointer;text-decoration:underline;">Réessayer</button>
+                </div>
+              </div>
+              <button class="icon-btn-dl" (click)="telechargerHistorique()" [disabled]="pdfLoading.historique"
+                style="background: #f1f5f9; border:none; width:45px; height:45px; border-radius: 50%; font-size: 20px; cursor: pointer; display:flex; align-items:center; justify-content:center;">
+                <span *ngIf="!pdfLoading.historique">📥</span>
+                <span *ngIf="pdfLoading.historique">⏳</span>
+              </button>
+            </div>
+          </div>
+        </ng-container>
       </div>
-    </div>
-
-    <!-- Navigation par Onglets -->
-    <nav class="modern-tabs">
-      <button class="tab-item" [class.active]="ongletActif === 'overview'" (click)="ongletActif = 'overview'">
-        <span class="tab-icon">📊</span> Vue d'ensemble
-      </button>
-      <button class="tab-item" [class.active]="ongletActif === 'paiements'" (click)="ongletActif = 'paiements'">
-        <span class="tab-icon">💵</span> Paiements
-      </button>
-      <button class="tab-item" [class.active]="ongletActif === 'relances'" (click)="ongletActif = 'relances'">
-        <span class="tab-icon">📢</span> Relances
-      </button>
-      <button class="tab-item" [class.active]="ongletActif === 'communications'" (click)="ongletActif = 'communications'">
-        <span class="tab-icon">💬</span> Messages
-      </button>
-      <button class="tab-item" [class.active]="ongletActif === 'actions'" (click)="ongletActif = 'actions'">
-        <span class="tab-icon">📋</span> Documents
-      </button>
-    </nav>
-
-    <!-- Contenu des Onglets -->
-    <div class="tab-content-wrapper">
-
-      <!-- VUE D'ENSEMBLE -->
-      <ng-container *ngIf="ongletActif === 'overview'">
-        <div class="grid-layout">
-
-          <!-- Chiffres Clés -->
-          <div class="stats-overview">
-            <div class="stat-card-mini initial">
-              <span class="label">Montant Total</span>
-              <span class="value">{{ (dossier?.montantInitial || 0) | number }} TND</span>
-            </div>
-            <div class="stat-card-mini paid">
-              <span class="label">Total Payé</span>
-              <span class="value">{{ montantPaye | number }} TND</span>
-            </div>
-            <div class="stat-card-mini remaining danger">
-              <span class="label">Reste à payer</span>
-              <span class="value">{{ dossier?.montantImpaye | number }} TND</span>
-            </div>
-            <div class="stat-card-mini delay warning">
-              <span class="label">Retard</span>
-              <span class="value">{{ joursRetard }} Jours</span>
-            </div>
-          </div>
-
-          <!-- Progression Visuelle -->
-          <div class="glass-section progress-box">
-            <div class="section-title">Progression du remboursement</div>
-            <div class="big-progress">
-              <div class="progress-info">
-                <span class="percentage">{{ progressionPaiement }}%</span>
-                <span class="description">de la dette remboursée</span>
-              </div>
-              <div class="progress-track-large">
-                <div class="progress-fill-gradient" [style.width.%]="progressionPaiement"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Echéancier -->
-          <div class="glass-section table-box">
-            <div class="section-title">Prochaines Échéances</div>
-            <div class="table-responsive">
-              <table class="modern-table">
-                <thead>
-                  <tr>
-                    <th>Montant</th>
-                    <th>Date d'échéance</th>
-                    <th>État</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let e of dossier?.echeances">
-                    <td class="bold">{{ e.montant | number }} TND</td>
-                    <td>{{ e.dateEcheance | date:'dd MMM yyyy' }}</td>
-                    <td>
-                      <span class="dot-status" [class]="e.statut"></span>
-                      {{ e.statut | uppercase }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Formulaire Intention -->
-          <div class="glass-section form-box" *ngIf="!submitted; else confirmationBlock">
-            <div class="section-title">Déposer une intention</div>
-            <p class="form-help">Informez votre conseiller de votre situation pour régulariser votre dossier.</p>
-
-            <!-- Avertissement doublon -->
-            <div class="doublon-warning" *ngIf="afficherAvertissementDoublon && intentionExistante">
-              <div class="doublon-icon">⚠️</div>
-              <div class="doublon-body">
-                <strong>Une intention est déjà en attente</strong>
-                <p>Vous avez déjà soumis une intention de type
-                  <em>{{ intentionExistante.typeIntention | titlecase }}</em>
-                  le {{ intentionExistante.dateIntention | date:'dd/MM/yyyy' }}.
-                  Souhaitez-vous la modifier ou l'annuler ?
-                </p>
-                <div class="doublon-actions">
-                  <button class="btn-modifier" (click)="modifierIntentionExistante()">
-                    ✏️ Modifier (soumettre une nouvelle)
-                  </button>
-                  <button class="btn-annuler-intention" (click)="annulerIntentionExistante()" [disabled]="intentionLoading">
-                    <span *ngIf="!intentionLoading">🗑️ Annuler l'intention précédente</span>
-                    <span *ngIf="intentionLoading">⏳ Annulation...</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <form [formGroup]="form" (ngSubmit)="onSubmit()" class="modern-form">
-
-              <div class="input-group">
-                <label>Email (optionnel — pour l'accusé de réception)</label>
-                <input type="email" formControlName="email" class="styled-input" placeholder="votre@email.com">
-                <div class="field-warning" *ngIf="emailInvalide">
-                  📱 Adresse e-mail invalide — l'accusé sera envoyé uniquement par SMS.
-                </div>
-              </div>
-
-              <div class="input-group">
-                <label>Action envisagée <span class="required">*</span></label>
-                <div class="visual-select">
-                  <div *ngFor="let action of actionsDisponibles"
-                       class="select-option"
-                       [class.active]="form.get('typeIntention')?.value === action.value"
-                       (click)="form.get('typeIntention')?.setValue(action.value)">
-                    <span class="option-label">{{ action.label }}</span>
-                  </div>
-                </div>
-                <div class="field-error"
-                     *ngIf="form.get('typeIntention')?.touched && !form.get('typeIntention')?.value">
-                  ⚠️ Veuillez sélectionner une action avant de soumettre.
-                </div>
-              </div>
-
-              <div class="grid-form" *ngIf="form.get('typeIntention')?.value">
-                <div class="input-group" *ngIf="['demande_echeance', 'promesse_paiement'].includes(form.get('typeIntention')?.value)">
-                  <label>Date prévue</label>
-                  <input type="date" formControlName="datePaiementPrevue" class="styled-input">
-                </div>
-                <div class="input-group" *ngIf="form.get('typeIntention')?.value === 'paiement_partiel'">
-                  <label>Montant proposé</label>
-                  <div class="currency-input">
-                    <input type="number" formControlName="montantPropose" class="styled-input" placeholder="0.00">
-                    <span class="currency">TND</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="input-group">
-                <label>Commentaire</label>
-                <textarea formControlName="commentaire" rows="3" class="styled-input" placeholder="Détails complémentaires..."></textarea>
-              </div>
-
-              <div class="form-actions">
-                <button type="button" class="cancel-btn" (click)="annulerFormulaire()">
-                  ✕ Annuler
-                </button>
-                <button type="submit" class="submit-btn" [disabled]="form.invalid || loading">
-                  <span *ngIf="!loading">🚀 Envoyer mon intention</span>
-                  <span *ngIf="loading">Traitement...</span>
-                </button>
-              </div>
-
-            </form>
-          </div>
-
-          <ng-template #confirmationBlock>
-            <div class="success-celebration">
-              <div class="success-icon">🎉</div>
-              <h3>Intention transmise !</h3>
-              <p>Votre demande est en cours d'analyse par nos services.</p>
-              <button class="secondary-btn" (click)="submitted = false">Nouvelle déclaration</button>
-            </div>
-          </ng-template>
-
-        </div>
-      </ng-container>
-
-      <!-- PAIEMENTS -->
-      <ng-container *ngIf="ongletActif === 'paiements'">
-        <div class="glass-section">
-          <div class="section-title">Historique des transactions</div>
-          <table class="modern-table">
-            <thead>
-              <tr>
-                <th>Montant</th>
-                <th>Date de paiement</th>
-                <th>Mode</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let p of dossier?.paiements">
-                <td class="bold success-text">+ {{ p.montantPaye | number }} TND</td>
-                <td>{{ p.datePaiement | date:'dd MMM yyyy' }}</td>
-                <td><span class="payment-badge">{{ p.typePaiement }}</span></td>
-              </tr>
-              <tr *ngIf="!dossier?.paiements?.length">
-                <td colspan="3" class="empty-msg">Aucune transaction enregistrée</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </ng-container>
-
-      <!-- RELANCES -->
-      <ng-container *ngIf="ongletActif === 'relances'">
-        <div class="relances-stream">
-          <div class="relance-item" *ngFor="let r of dossier?.relances">
-            <div class="relance-meta">
-              <div class="relance-canal">
-                {{ r.moyen === 'sms' ? '📱' : r.moyen === 'email' ? '📧' : '📞' }}
-                {{ r.moyen | uppercase }}
-              </div>
-              <span class="relance-date">{{ r.dateRelance | date:'dd MMM yyyy' }}</span>
-            </div>
-            <div class="relance-bubble">
-              <p>{{ r.contenu || 'Message de relance administrative' }}</p>
-              <div class="relance-footer">
-                <span class="relance-status" [class]="r.statut">{{ r.statut }}</span>
-                <button class="reply-btn" *ngIf="r.statut !== 'repondu'" (click)="ouvrirReponseRelance(r)">
-                  Répondre
-                </button>
-              </div>
-            </div>
-            <div class="inline-reply" *ngIf="relanceRepondreIndex === r.idRelance">
-              <textarea [(ngModel)]="reponseRelanceTexte" placeholder="Votre réponse..." class="styled-input"></textarea>
-              <div class="reply-actions">
-                <button (click)="annulerReponseRelance()" class="text-btn">Annuler</button>
-                <button (click)="envoyerReponseRelance(r)" class="small-submit" [disabled]="!reponseRelanceTexte.trim()">Envoyer</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ng-container>
-
-      <!-- MESSAGES -->
-      <ng-container *ngIf="ongletActif === 'communications'">
-        <div class="chat-container">
-          <div class="chat-history">
-            <div *ngFor="let comm of dossier?.communications" class="message-wrapper" [class.from-client]="comm.origine === 'client'">
-              <div class="message-bubble">
-                <div class="message-info">{{ comm.origine === 'client' ? 'Vous' : 'Banque' }} • {{ comm.dateEnvoi | date:'HH:mm' }}</div>
-                <div class="message-text">{{ comm.message }}</div>
-              </div>
-            </div>
-          </div>
-          <form [formGroup]="messageForm" (ngSubmit)="envoyerMessage()" class="chat-input-area">
-            <textarea formControlName="message" placeholder="Tapez votre message ici..."></textarea>
-            <button type="submit" [disabled]="messageForm.invalid || messageSending">➔</button>
-          </form>
-        </div>
-      </ng-container>
-
-      <!-- DOCUMENTS -->
-      <ng-container *ngIf="ongletActif === 'actions'">
-        <div class="docs-grid">
-
-          <div class="doc-card">
-            <div class="doc-type-icon">📊</div>
-            <div class="doc-body">
-              <h4>État de situation</h4>
-              <p>Justificatif officiel de votre solde actuel.</p>
-              <div class="pdf-error" *ngIf="pdfError.recu">
-                <span>⚠️ {{ pdfError.recu }}</span>
-                <button class="retry-btn" (click)="telechargerRecu()">Réessayer</button>
-              </div>
-            </div>
-            <button class="icon-btn-dl" (click)="telechargerRecu()" [disabled]="pdfLoading.recu">
-              <span *ngIf="!pdfLoading.recu">📥</span>
-              <span *ngIf="pdfLoading.recu" class="spinner">⏳</span>
-            </button>
-          </div>
-
-          <div class="doc-card">
-            <div class="doc-type-icon">📜</div>
-            <div class="doc-body">
-              <h4>Historique complet</h4>
-              <p>Toutes vos actions et paiements depuis l'ouverture.</p>
-              <div class="pdf-error" *ngIf="pdfError.historique">
-                <span>⚠️ {{ pdfError.historique }}</span>
-                <button class="retry-btn" (click)="telechargerHistorique()">Réessayer</button>
-              </div>
-            </div>
-            <button class="icon-btn-dl" (click)="telechargerHistorique()" [disabled]="pdfLoading.historique">
-              <span *ngIf="!pdfLoading.historique">📥</span>
-              <span *ngIf="pdfLoading.historique" class="spinner">⏳</span>
-            </button>
-          </div>
-
-        </div>
-
-        <div class="quick-support">
-          <h3>Besoin d'aide immédiate ?</h3>
-          <div class="support-channels">
-            <div class="channel whatsapp" (click)="ouvrirWhatsApp()">
-              <span class="channel-icon">💬</span>
-              <span>WhatsApp Rapide</span>
-            </div>
-            <div class="channel phone" (click)="contacterAgence()">
-              <span class="channel-icon">📞</span>
-              <span>Appeler l'agence</span>
-            </div>
-          </div>
-        </div>
-      </ng-container>
-
-    </div>
-  </main>
+    </main>
+  </div>
 </div>

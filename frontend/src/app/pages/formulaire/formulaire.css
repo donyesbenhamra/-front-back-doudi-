@@ -3,60 +3,7 @@
   background-color: var(--bg-page);
 }
 
-.main-header {
-  background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
-  color: white;
-  padding: 40px 20px;
-  position: relative;
-  overflow: hidden;
-}
 
-.header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.client-profile {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.header-back-btn {
-  background: var(--glass);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: all 0.2s;
-  font-family: 'Inter', sans-serif;
-}
-
-.header-back-btn:hover {
-  background: rgba(255,255,255,0.2);
-  transform: translateX(-4px);
-}
-
-.agency-badge {
-  background: var(--glass);
-  backdrop-filter: blur(10px);
-  padding: 8px 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.1);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
 
 .content-area {
   max-width: 1200px;
@@ -119,9 +66,20 @@
   border-radius: 12px;
 }
 
-.statut-pill.contentieux { background: #fef2f2; color: #ef4444; }
-.statut-pill.amiable { background: #fffbeb; color: #f59e0b; }
-.statut-pill.regularise { background: #ecfdf5; color: #10b981; }
+.statut-pill.contentieux {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.statut-pill.amiable {
+  background: #fffbeb;
+  color: #f59e0b;
+}
+
+.statut-pill.regularise {
+  background: #ecfdf5;
+  color: #10b981;
+}
 
 /* Tabs */
 .modern-tabs {
@@ -188,9 +146,17 @@
   color: var(--text-main);
 }
 
-.stat-card-mini.danger .value { color: #ef4444; }
-.stat-card-mini.warning .value { color: #f59e0b; }
-.stat-card-mini.paid .value { color: #10b981; }
+.stat-card-mini.danger .value {
+  color: #ef4444;
+}
+
+.stat-card-mini.warning .value {
+  color: #f59e0b;
+}
+
+.stat-card-mini.paid .value {
+  color: #10b981;
+}
 
 /* Progress */
 .glass-section {
@@ -212,7 +178,7 @@
 
 .progress-fill-gradient {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary-light), var(--accent));
+  background: linear-gradient(90deg, #3b82f6, #1e40af);
   border-radius: 8px;
 }
 
@@ -251,8 +217,13 @@
   margin-right: 8px;
 }
 
-.dot-status.paye { background: #10b981; }
-.dot-status.impaye { background: #ef4444; }
+.dot-status.paye {
+  background: #10b981;
+}
+
+.dot-status.impaye {
+  background: #ef4444;
+}
 
 /* Form */
 .visual-select {
@@ -288,7 +259,7 @@
 }
 
 .submit-btn {
-  background: var(--primary);
+  background: #007bff;
   color: white;
   border: none;
   padding: 18px;
@@ -298,6 +269,21 @@
   cursor: pointer;
   width: 100%;
   margin-top: 12px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3);
+}
+
+.submit-btn:disabled {
+  background: #cbd5e1;
+  color: #f8fafc;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 /* Chat */
@@ -332,8 +318,14 @@
   border-radius: 10px;
 }
 
-.message-wrapper { align-self: flex-start; max-width: 80%; }
-.message-wrapper.from-client { align-self: flex-end; }
+.message-wrapper {
+  align-self: flex-start;
+  max-width: 80%;
+}
+
+.message-wrapper.from-client {
+  align-self: flex-end;
+}
 
 .message-bubble {
   padding: 16px 20px;
@@ -343,7 +335,7 @@
 }
 
 .from-client .message-bubble {
-  background: var(--primary);
+  background: #007bff;
   color: white;
   border-radius: 20px 20px 4px 20px;
 }
@@ -414,9 +406,20 @@
   border-radius: 8px;
 }
 
-.relance-status.envoye { background: #eff6ff; color: #3b82f6; }
-.relance-status.repondu { background: #ecfdf5; color: #10b981; }
-.relance-status.sans_reponse { background: #fef2f2; color: #ef4444; }
+.relance-status.envoye {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+
+.relance-status.repondu {
+  background: #ecfdf5;
+  color: #10b981;
+}
+
+.relance-status.sans_reponse {
+  background: #fef2f2;
+  color: #ef4444;
+}
 
 .reply-btn {
   background: var(--primary-light);
@@ -443,8 +446,15 @@
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .inline-reply textarea {
@@ -598,8 +608,15 @@
   transition: transform 0.2s;
 }
 
-.channel.whatsapp { background: #ecfdf5; color: #10b981; }
-.channel.phone { background: #eff6ff; color: #3b82f6; }
+.channel.whatsapp {
+  background: #ecfdf5;
+  color: #10b981;
+}
+
+.channel.phone {
+  background: #eff6ff;
+  color: #3b82f6;
+}
 
 .section-title {
   font-size: 1.25rem;
@@ -607,6 +624,7 @@
   color: var(--primary);
   margin-bottom: 24px;
 }
+
 .pdf-error {
   display: flex;
   align-items: center;
@@ -643,9 +661,15 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
+
 /* ── Avertissement doublon ── */
 .doublon-warning {
   display: flex;
@@ -657,7 +681,9 @@
   margin-bottom: 20px;
 }
 
-.doublon-icon { font-size: 1.5rem; }
+.doublon-icon {
+  font-size: 1.5rem;
+}
 
 .doublon-body p {
   margin: 4px 0 12px;
@@ -681,7 +707,9 @@
   cursor: pointer;
 }
 
-.btn-modifier:hover { background: #1d4ed8; }
+.btn-modifier:hover {
+  background: #1d4ed8;
+}
 
 .btn-annuler-intention {
   background: white;
@@ -693,8 +721,14 @@
   cursor: pointer;
 }
 
-.btn-annuler-intention:hover { background: #fee2e2; }
-.btn-annuler-intention:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-annuler-intention:hover {
+  background: #fee2e2;
+}
+
+.btn-annuler-intention:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 /* ── Erreurs champs ── */
 .field-error {
@@ -709,7 +743,10 @@
   margin-top: 6px;
 }
 
-.required { color: #dc2626; }
+.required {
+  color: #dc2626;
+}
+
 .form-actions {
   display: flex;
   gap: 12px;
@@ -730,7 +767,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.25s ease;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   letter-spacing: 0.3px;
 }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef } from '@angular/core';
+import { Component, OnInit, TemplateRef, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule, NgIfContext } from '@angular/common';
@@ -58,7 +58,8 @@ confirmationBlock: NewType | null | undefined;
     private tokenService: TokenService,
     private fb: FormBuilder,
     private recouvrementService: RecouvrementService,
-    private http: HttpClient
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -93,6 +94,7 @@ this.tokenService.clearClientData();
         if (!this.dossier) { this.router.navigate(['/token-invalide']); return; }
         this.dataLoading = false;
         this.verifierDoublon();
+        this.cdr.detectChanges();
       },
       error: () => {
         this.dataLoading = false;
@@ -142,14 +144,19 @@ annulerIntentionExistante(): void {
       this.intentionLoading = false;
       this.intentionExistante = null;
       this.afficherAvertissementDoublon = false;
+      this.cdr.detectChanges();
     },
-    error: () => { this.intentionLoading = false; }
+    error: (err) => {
+      console.error('Erreur annulation:', err);
+      this.intentionLoading = false;
+      this.cdr.detectChanges();
+    }
   });
 }
-
 modifierIntentionExistante(): void {
   this.afficherAvertissementDoublon = false;
-  // Le formulaire reste visible pour soumettre une nouvelle intention
+  this.intentionExistante = null;
+  // Le formulaire redevient visible pour soumettre une nouvelle intention
 }
 
 onSubmit(): void {
@@ -195,17 +202,12 @@ annulerFormulaire(): void {
   this.emailInvalide = false;
 }
   // ── Getters ──────────────────────────────────────────
-  get montantPaye(): number {
-    if (!this.dossier?.paiements) return 0;
-    return this.dossier.paiements.reduce((sum, p) => sum + p.montantPaye, 0);
-  }
-
-  get joursRetard(): number {
-    if (!this.dossier?.dateEcheance) return 0;
-    const echeance = new Date(this.dossier.dateEcheance);
-    const diff = new Date().getTime() - echeance.getTime();
-    return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
-  }
+ get montantPaye(): number {
+  return this.dossier?.montantPaye ?? 0;
+}
+ get joursRetard(): number {
+  return this.dossier?.nombreJoursRetard ?? 0;
+}
 
   get progressionPaiement(): number {
     if (!this.dossier?.montantInitial || this.dossier.montantInitial === 0) return 0;
@@ -241,7 +243,7 @@ annulerFormulaire(): void {
     if (!this.fichierSelectionne) return;
     const formData = new FormData();
     formData.append('fichier', this.fichierSelectionne);
-    this.http.post(`http://localhost:5203/api/client/upload/${this.token}`, formData).subscribe({
+    this.http.post(`http://localhost:5000/api/client/upload/${this.token}`, formData).subscribe({
       next: () => { alert('Fichier envoyé !'); this.fichierSelectionne = null; },
       error: () => alert("Erreur lors de l'envoi.")
     });
@@ -253,7 +255,7 @@ annulerFormulaire(): void {
     this.pdfError.recu = null;
 
     this.http.get(
-      `http://localhost:5203/api/client/recu/${this.token}?idDossier=${this.idDossier}`,
+      `http://localhost:5000/api/client/recu/${this.token}?idDossier=${this.idDossier}`,
       { responseType: 'blob' }
     ).subscribe({
       next: (blob) => {
@@ -277,7 +279,7 @@ annulerFormulaire(): void {
     this.pdfError.historique = null;
 
     this.http.get(
-      `http://localhost:5203/api/client/historique-pdf/${this.token}/${this.idDossier}`,
+      `http://localhost:5000/api/client/historique-pdf/${this.token}/${this.idDossier}`,
       { responseType: 'blob' }
     ).subscribe({
       next: (blob) => {
@@ -310,7 +312,11 @@ annulerFormulaire(): void {
         this.messageForm.reset();
         this.rafraichirDossier(() => { this.messageSending = false; });
       },
-      error: () => { this.messageSending = false; }
+      error: (err) => { 
+        console.error('Erreur lors de lenvoi du message', err);
+        alert('Erreur serveur lors de lenvoi. Veuillez vérifier la connexion backend.');
+        this.messageSending = false; 
+      }
     });
   }
 
@@ -337,7 +343,11 @@ annulerFormulaire(): void {
           this.relanceRepondreIndex = null;
           r.statut = 'repondu';
         },
-        error: () => { this.relanceSending = false; }
+        error: (err) => { 
+          console.error("Erreur lors de la réponse à la relance", err);
+          alert('Erreur: impossible d\'envoyer la réponse à cette relance. Vérifiez la connexion au backend.');
+          this.relanceSending = false; 
+        }
       });
   }
 
@@ -348,16 +358,32 @@ annulerFormulaire(): void {
         this.clientData = data;
         this.tokenService.saveClientData(data);
         this.dossier = data.dossiers.find(d => Number(d.idDossier) === Number(this.idDossier)) || null;
+        this.cdr.detectChanges();
         if (callback) callback();
       },
-      error: () => { if (callback) callback(); }
+      error: () => { 
+        this.cdr.detectChanges();
+        if (callback) callback(); 
+      }
     });
   }
 
   changerOnglet(onglet: 'overview' | 'relances' | 'communications'): void {
     this.ongletActif = onglet;
   }
-  intentionExistante: any = null;
+  
+  isDarkMode = false;
+  toggleTheme(): void {
+    this.isDarkMode = !this.isDarkMode;
+    if (this.isDarkMode) {
+      document.body.classList.add('dark-theme');
+    } else {
+      document.body.classList.remove('dark-theme');
+    }
+    this.cdr.detectChanges();
+  }
+
+intentionExistante: any = null;
 intentionLoading = false;
 afficherAvertissementDoublon = false;
 emailInvalide = false;

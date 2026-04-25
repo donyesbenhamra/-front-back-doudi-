@@ -14,6 +14,8 @@ export interface RelanceDto {
   moyen: string;
   statut: string;
   contenu: string;
+  typeRelance?: string;
+  niveauDanger?: string;
 }
 
 export interface DossierDto {
@@ -21,6 +23,8 @@ export interface DossierDto {
   typeEmprunt: string;
   montantInitial: number;
   montantImpaye: number;
+  montantPaye: number;    
+  nombreJoursRetard: number;
   fraisDossier: number;
   statutDossier: string;
   dateEcheance: string;
@@ -40,7 +44,7 @@ export interface ClientHistoriqueDto {
 @Injectable({ providedIn: 'root' })
 export class TokenService {
 
-  private apiUrl = 'http://localhost:5203/api';
+  private apiUrl = 'http://localhost:5000/api';
 
   constructor(private http: HttpClient) {}
 
